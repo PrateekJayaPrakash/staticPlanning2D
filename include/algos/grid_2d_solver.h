@@ -24,7 +24,6 @@ class Grid2dSolver{
         // std::shared_ptr<node2d> endNode);
 
         vector<vector<int>> DfsSolve(
-            const vector<vector<node2d>> searchMap,
             node2d& startNode,
             node2d& endNode);
 };

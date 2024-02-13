@@ -27,12 +27,10 @@ int Grid2dSolver::solve()
 // }
 
 vector<vector<int>> Grid2dSolver::DfsSolve(
-    const vector<vector<node2d>> searchMap,
     node2d& startNode,
     node2d& goalNode
     )
 {
-    std::cout << searchMap[1][0].neighbors.size()<< std::endl;
     cout<<"--"<<endl;
     // If start is goal, 
     if(startNode.goal == 1){

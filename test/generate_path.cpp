@@ -102,7 +102,7 @@ void Grid::DfsPath(){
     cout << "Starting at: "<< startNode -> x << " " << startNode->y;
     cout << "  and goal at: "<< goalNode -> x << " " << goalNode->y << endl;
 
-    vector<vector<int>> path = gs->DfsSolve(map, *startNode, *goalNode);
+    vector<vector<int>> path = gs->DfsSolve(*startNode, *goalNode);
     for(auto p:path){
         map[p[1]][p[0]].obstacle=2;
     }
