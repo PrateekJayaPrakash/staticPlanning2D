@@ -4,28 +4,36 @@
 #include <nodes/node2d.h>
 #include <plot/pbPlots.hpp>
 #include <plot/supportLib.hpp>
+#include <algos/grid_2d_solver.h>
 #include <queue>
 #include <unordered_map>
-
-
+#include <memory>
 
 using namespace std;
-
 
 typedef pair<int, node2d*> nodeInfo; 
 
 class Grid{
-    public:
+    private:
+        // Dimensions of map
         int gridWidth, gridHeight;
-        node2d* startNode;
-        node2d* endNode;
-        std::vector<vector<node2d*>> map;
-
+        
+        // Start and end nodes
+        shared_ptr<node2d> startNode;
+        shared_ptr<node2d> goalNode;
+        
+        // Initialize the map
+        std::vector<vector<node2d>> map;
+        
+        // Initialize the solver
+        unique_ptr<Grid2dSolver> gs;
+    public:
         Grid(int, int);
         void updateObstacles();
         void setStartGoal(vector<int>, vector<int>);
-        vector<node2d*> aStarPath();
         void printPath();
+        void aStarPath();
+        void DfsPath();     
 };
 
 Grid::Grid(int gridWidth, int gridHeight){
@@ -33,14 +41,13 @@ Grid::Grid(int gridWidth, int gridHeight){
     this->gridHeight = gridHeight;
     //this->map = vector<vector<node2d*>>(this->gridWidth, vector<node2d*>(this->gridHeight));
 
-    this->map.resize(this->gridWidth, vector<node2d*>(this->gridHeight));
+    this->map.resize(this->gridWidth, vector<node2d>(this->gridHeight));
     
     /* Create nodes */
     for (int i = 0; i < this->gridWidth; i++){
 
         for(int j = 0; j < this->gridHeight; j++){
-
-            this->map[j][i] = new node2d(i, j);
+            this->map[j][i] = node2d(i, j);
         }
     }
 
@@ -50,45 +57,72 @@ Grid::Grid(int gridWidth, int gridHeight){
         for(int j = 0; j < this->gridHeight; j++){
 
             if (j < this -> gridHeight - 1) {
-				this -> map[j][i]->neighbors.push_back(map[j + 1][i]);
+				this -> map[j][i].neighbors.push_back(&map[j + 1][i]);
 			}
 			if (i < this -> gridWidth - 1) {
-				this -> map[j][i]->neighbors.push_back(map[j][i + 1]);
+				this -> map[j][i].neighbors.push_back(&map[j][i + 1]);
 			}
 			if (j > 0) {
-				this -> map[j][i]->neighbors.push_back(map[j - 1][i]);
+				this -> map[j][i].neighbors.push_back(&map[j - 1][i]);
 			}
 			if (i > 0) {
-				this -> map[j][i]->neighbors.push_back(map[j][i - 1]);
+				this -> map[j][i].neighbors.push_back(&map[j][i - 1]);
 			}
         }
     }
-
     /* Update obstacles */
     this -> updateObstacles();   
 }
 
 void Grid::updateObstacles(){
-    vector<int> obsX = {1, 2, 3, 4, 5, 5, 6, 7, 8};
-    vector<int> obsY = {1, 2, 1, 1, 1, 4, 1, 1, 1};
+    vector<int> obsX = {1, 2, 3, 4, 5, 6, 5, 6, 7, 8};
+    vector<int> obsY = {1, 2, 1, 1, 1, 6, 4, 1, 1, 1};
     for(int i = 0; i < obsX.size(); i++){
-        this -> map[obsY[i]][obsX[i]] -> obstacle = 1;
+        this -> map[obsY[i]][obsX[i]].obstacle = 1;
     }
 }
 
 void Grid::setStartGoal(vector<int> st, vector<int> gl){
-    this->map[st[1]][st[0]] -> start = 1;
-    this->map[gl[1]][gl[0]] -> goal = 1;    
+    this->map[st[1]][st[0]].start = 1;
+    this->startNode = make_shared<node2d>(map[st[1]][st[0]]);
+    this->map[gl[1]][gl[0]].goal = 1;
+    this->goalNode = make_shared<node2d>(map[gl[1]][gl[0]]);
 }
 
 void Grid::aStarPath(){
-    
+    cout << "---------  Using A* to solve ---------" << endl;
+    // Initilize the solver with the map
+    cout << "Starting at: "<< startNode -> x << " " << startNode->y;
+    cout << "  and goal at: "<< goalNode -> x << " " << goalNode->y << endl;
 }
+
+void Grid::DfsPath(){
+    cout << "---------  Using DFS to solve ---------" << endl;
+    // Initilize the solver with the map
+    cout << "Starting at: "<< startNode -> x << " " << startNode->y;
+    cout << "  and goal at: "<< goalNode -> x << " " << goalNode->y << endl;
+
+    vector<vector<int>> path = gs->DfsSolve(this->map, *startNode, *goalNode);
+    for(auto p:path){
+        map[p[1]][p[0]].obstacle=2;
+    }
+}
+
 
 void Grid::printPath(){
     for (int i = this-> gridWidth - 1; i >=0; i--){
         for(int j = 0; j < this->gridHeight; j++){
-            cout<< this->map[i][j]->obstacle << " ";
+            if(this->map[i][j].obstacle == 1)
+            {
+                cout<< "X" << " ";
+            }
+            else if(this->map[i][j].obstacle == 2)
+            {
+                cout<< "1" << " ";
+            }
+            else{
+                cout<< this->map[i][j].obstacle << " ";
+            }
         }
         cout << endl;
     }
@@ -129,7 +163,9 @@ int main()
     Grid gd(width, height);
     gd.setStartGoal({0,0}, {6,6});
     gd.printPath();
-
+    //gd.aStarPath();
+    gd.DfsPath();
+    gd.printPath();
     /* Plotting example */
     //vector<double> xs{-2, -1, 0, 1, 2};
 	//vector<double> ys{2, -1, -2, -1, 2};
