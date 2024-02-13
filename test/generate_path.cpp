@@ -23,7 +23,7 @@ class Grid{
         shared_ptr<node2d> goalNode;
         
         // Initialize the map
-        std::vector<vector<node2d>> map;
+        std::vector<vector<shared_ptr<node2d>>> map;
         
         // Initialize the solver
         unique_ptr<Grid2dSolver> gs;
@@ -41,13 +41,13 @@ Grid::Grid(int gridWidth, int gridHeight){
     this->gridHeight = gridHeight;
     //this->map = vector<vector<node2d*>>(this->gridWidth, vector<node2d*>(this->gridHeight));
 
-    map.resize(this->gridWidth, vector<node2d>(this->gridHeight));
+    map.resize(this->gridWidth, vector<shared_ptr<node2d>>(this->gridHeight));
     
     /* Create nodes */
     for (int i = 0; i < this->gridWidth; i++){
 
         for(int j = 0; j < this->gridHeight; j++){
-            map[j][i] = node2d(i, j);
+            map[j][i] = make_shared<node2d>(i, j);
         }
     }
 
@@ -57,16 +57,16 @@ Grid::Grid(int gridWidth, int gridHeight){
         for(int j = 0; j < this->gridHeight; j++){
 
             if (j < this -> gridHeight - 1) {
-				map[j][i].neighbors.push_back(&map[j + 1][i]);
+				map[j][i]->neighbors.push_back(map[j + 1][i]);
 			}
 			if (i < this -> gridWidth - 1) {
-				map[j][i].neighbors.push_back(&map[j][i + 1]);
+				map[j][i]->neighbors.push_back(map[j][i + 1]);
 			}
 			if (j > 0) {
-				map[j][i].neighbors.push_back(&map[j - 1][i]);
+				map[j][i]->neighbors.push_back(map[j - 1][i]);
 			}
 			if (i > 0) {
-				map[j][i].neighbors.push_back(&map[j][i - 1]);
+				map[j][i]->neighbors.push_back(map[j][i - 1]);
 			}
         }
     }
@@ -78,15 +78,15 @@ void Grid::updateObstacles(){
     vector<int> obsX = {1, 2, 3, 4, 5, 5, 6, 7, 8};
     vector<int> obsY = {1, 2, 1, 1, 1, 4, 1, 1, 1};
     for(int i = 0; i < obsX.size(); i++){
-        map[obsY[i]][obsX[i]].obstacle = 1;
+        map[obsY[i]][obsX[i]]->obstacle = 1;
     }
 }
 
 void Grid::setStartGoal(vector<int> st, vector<int> gl){
-    map[st[1]][st[0]].start = 1;
-    startNode = make_shared<node2d>(map[st[1]][st[0]]);
-    map[gl[1]][gl[0]].goal = 1;
-    goalNode = make_shared<node2d>(map[gl[1]][gl[0]]);
+    map[st[1]][st[0]]->start = 1;
+    startNode = map[st[1]][st[0]];
+    map[gl[1]][gl[0]]->goal = 1;
+    goalNode = map[gl[1]][gl[0]];
 }
 
 void Grid::aStarPath(){
@@ -104,7 +104,7 @@ void Grid::DfsPath(){
 
     vector<vector<int>> path = gs->DfsSolve(*startNode, *goalNode);
     for(auto p:path){
-        map[p[1]][p[0]].obstacle=2;
+        map[p[1]][p[0]]->obstacle=2;
     }
 }
 
@@ -112,16 +112,16 @@ void Grid::DfsPath(){
 void Grid::printPath(){
     for (int i = gridWidth - 1; i >=0; i--){
         for(int j = 0; j < gridHeight; j++){
-            if(map[i][j].obstacle == 1)
+            if(map[i][j]->obstacle == 1)
             {
                 cout<< "X" << " ";
             }
-            else if(map[i][j].obstacle == 2)
+            else if(map[i][j]->obstacle == 2)
             {
                 cout<< "1" << " ";
             }
             else{
-                cout<< map[i][j].obstacle << " ";
+                cout<< map[i][j]->obstacle << " ";
             }
         }
         cout << endl;
