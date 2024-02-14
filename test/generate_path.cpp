@@ -104,10 +104,8 @@ void Grid::DfsPath(){
     cout << "Starting at: "<< startNode -> x << " " << startNode->y;
     cout << "  and goal at: "<< goalNode -> x << " " << goalNode->y << endl;
 
-    vector<vector<int>> path = gs->DfsSolve(*startNode, *goalNode);
-    for(auto p:path){
-        map[p[1]][p[0]]->obstacle=2;
-    }
+    //vector<vector<int>> path = gs->DfsSolve(*startNode, *goalNode);
+    vector<vector<int>> path = gs->iterativeDfs(*startNode, *goalNode);
 
     saveToCSV("../output/map.csv", "../output/path.csv", path);
 }
@@ -197,11 +195,11 @@ int main()
 
     /* Create grid */
     Grid gd(width, height);
-    gd.setStartGoal({0,0}, {4,4});
-    gd.printPath();
+    gd.setStartGoal({0,0}, {9,1});
+    //gd.printPath();
     //gd.aStarPath();
     gd.DfsPath();
-    gd.printPath();
+    //gd.printPath();
     /* Plotting example */
     //vector<double> xs{-2, -1, 0, 1, 2};
 	//vector<double> ys{2, -1, -2, -1, 2};

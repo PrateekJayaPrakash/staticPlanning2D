@@ -11,7 +11,7 @@ class node2d{
         int x,y,cost, visited;
 
         vector<shared_ptr<node2d>> neighbors;
-        node2d* parent;
+        shared_ptr<node2d> parent;
         node2d();
         node2d(int,int);
 
