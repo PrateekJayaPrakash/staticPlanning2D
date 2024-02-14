@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <stack>
+#include <queue>
 #include <algorithm>
 #define INF INT_MAX
 
@@ -26,6 +27,56 @@ int Grid2dSolver::solve()
 
      
 // }
+vector<vector<int>> Grid2dSolver::iterativeBfs(
+    node2d& startNode,
+    node2d& goalNode
+    )
+{
+    cout<<"Starting iterative DFS solve"<<endl;
+    
+    // If start is goal 
+    if(startNode.goal == 1){
+        return {{startNode.x, startNode.y}};
+    }
+    
+    // Variable to store the path
+    vector<vector<int>> path;
+    
+    // Stack for DFS
+    std::queue<shared_ptr<node2d>> bfsQueue;
+
+    bfsQueue.push(std::make_shared<node2d>(startNode));
+
+    while(!bfsQueue.empty())
+    {
+        std::shared_ptr<node2d> temp = bfsQueue.front();
+        bfsQueue.pop();
+
+        // check if goal is reached
+        if(temp->x == goalNode.x && temp->y == goalNode.y){
+            while(temp != nullptr)
+            {
+                path.push_back({temp->x, temp->y});
+                temp = temp->parent;
+            }
+            std::reverse(path.begin(), path.end());
+            return path;
+        }
+
+        // visit neighbors
+        for(auto neighbor:temp->neighbors)
+        {
+            if(neighbor->visited == 0 && neighbor->obstacle != 1){
+                neighbor->visited = 1;
+                neighbor->parent = temp; // Set the parent node
+                bfsQueue.push(neighbor); // Push the neighbor onto the stack
+            }
+        }
+    
+    }
+    
+    return path;
+}
 
 vector<vector<int>> Grid2dSolver::iterativeDfs(
     node2d& startNode,

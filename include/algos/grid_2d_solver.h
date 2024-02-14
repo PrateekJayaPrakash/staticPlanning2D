@@ -30,4 +30,8 @@ class Grid2dSolver{
         vector<vector<int>> iterativeDfs(
             node2d& startNode,
             node2d& endNode);
+        
+        vector<vector<int>> iterativeBfs(
+            node2d& startNode,
+            node2d& endNode);
 };
