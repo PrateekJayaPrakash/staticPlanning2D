@@ -56,7 +56,7 @@ void Grid2dSolver::recursiveDFS(
     
     // mark current node as visited
     currentNode.visited = 1;
-    std::cout << currentNode.x << " " << currentNode.y << std::endl;
+    //std::cout << currentNode.x << " " << currentNode.y << std::endl;
 
     path.push_back({currentNode.x, currentNode.y});
 

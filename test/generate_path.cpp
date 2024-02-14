@@ -8,6 +8,7 @@
 #include <queue>
 #include <unordered_map>
 #include <memory>
+#include <fstream>
 
 using namespace std;
 
@@ -32,6 +33,7 @@ class Grid{
         void updateObstacles();
         void setStartGoal(vector<int>, vector<int>);
         void printPath();
+        void saveToCSV(string mapFilename, string pathFilename, vector<vector<int>> path);
         void aStarPath();
         void DfsPath();     
 };
@@ -106,6 +108,8 @@ void Grid::DfsPath(){
     for(auto p:path){
         map[p[1]][p[0]]->obstacle=2;
     }
+
+    saveToCSV("../output/map.csv", "../output/path.csv", path);
 }
 
 
@@ -126,6 +130,38 @@ void Grid::printPath(){
         }
         cout << endl;
     }
+
+    // To save dev time, print the path in a .csv
+    // Create a python script to visualize the path. (can get fancy with min effort)
+}
+
+void Grid::saveToCSV(string map_filename, string path_filename, vector<vector<int>> path) {
+    ofstream mpfile(map_filename);
+    ofstream pathFile(path_filename);
+
+    if (!mpfile.is_open()) {
+        cerr << "Failed to open file " << map_filename << endl;
+        return;
+    }
+
+    mpfile << "node_x,node_y,obstacle" << endl;
+
+    for (int i = 0; i < gridWidth; i++) {
+        for (int j = 0; j < gridHeight; j++) {
+            mpfile << i << "," << j << "," << map[i][j]->obstacle << endl;
+        }
+    }
+
+    // path output
+    mpfile.close();
+    cout << "Map saved successfully: " << map_filename << endl;
+
+    pathFile << "node_x,node_y" << endl;
+    for(auto p:path){
+        pathFile << p[1] << "," << p[0]<< endl;
+    }
+    mpfile.close();
+    cout << "Path saved successfully: " << path_filename << endl;
 }
 
 bool PlotPNG(vector<double> xs, vector<double> ys){
@@ -156,12 +192,12 @@ bool PlotPNG(vector<double> xs, vector<double> ys){
 int main()
 {
     /* Initialize Variables */
-    int width = 10;
-    int height = 10;
+    int width = 20;
+    int height = 20;
 
     /* Create grid */
     Grid gd(width, height);
-    gd.setStartGoal({0,0}, {6,6});
+    gd.setStartGoal({0,0}, {4,4});
     gd.printPath();
     //gd.aStarPath();
     gd.DfsPath();
