@@ -28,9 +28,10 @@ public:
     // Types of graphs
     void graphBuilder();
     void removeRandomPoints(int N);
-    void exportCSV(const string& filename);
+    void exportMap(const string& filename);
+    void exportPath(const vector<shared_ptr<node2d>>& path, const string& filename);
     // Solvers
-    void djikstra(node2d n1, node2d n2);
+    void djikstra(int x1, int y1, int x2, int y2);
 };
 
 NodeGraph::NodeGraph(int N){
@@ -90,11 +91,11 @@ void NodeGraph::graphBuilder(){
         }
     }
     removeRandomPoints(0);
-    exportCSV("../output/map.csv");
+    exportMap("../output/map.csv");
 }
 
 // Method to export nodes' coordinates to a CSV file
-void NodeGraph::exportCSV(const string& filename) {
+void NodeGraph::exportMap(const string& filename) {
     ofstream file(filename);
     if (!file.is_open()) {
         cerr << "Failed to open file for writing." << endl;
@@ -134,6 +135,32 @@ void NodeGraph::removeRandomPoints(int N) {
     cout << "Removed " << N << " random points." << endl;
 }
 
+void NodeGraph::djikstra(int x1, int y1, int x2, int y2){
+    // Assumption: start and goal exist in the map
+    shared_ptr<node2d> start = findOrCreateNode(x1, y1);
+    shared_ptr<node2d> goal = findOrCreateNode(x2, y2);
+    vector<shared_ptr<node2d>> path = {start, goal};
+    exportPath(path, "../output/path.csv");
+}
+
+void NodeGraph::exportPath(const vector<shared_ptr<node2d>>& path, const string& filename){
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Failed to open file for writing." << endl;
+        return;
+    }
+
+    // Write header
+    file << "node_x,node_y" << endl;
+
+    // Write coordinates
+    for (const auto& node : path) {
+        file << node->x << "," << node->y << endl;
+    }
+
+    file.close();
+    cout << "Path Export successful." << endl;
+}
 
 int main()
 {
@@ -144,6 +171,7 @@ int main()
     graph.addEdge(0, 0, 1, 1, 10);
     graph.addEdge(0, 0, 2, 2, 5);
     graph.graphBuilder();
+    graph.djikstra(1,1,2,2);
 
     cout << graph.nodeList.size();
     return 0;
