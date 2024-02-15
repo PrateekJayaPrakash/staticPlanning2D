@@ -198,12 +198,7 @@ int main()
     gd.setStartGoal({0,0}, {3,2});
     //gd.printPath();
     //gd.aStarPath();
-    gd.DfsPath();
-    //gd.printPath();
-    /* Plotting example */
-    //vector<double> xs{-2, -1, 0, 1, 2};
-	//vector<double> ys{2, -1, -2, -1, 2};
-    //bool success = PlotPNG(xs, ys);   
+    gd.DfsPath(); 
     
     return 0;
 }

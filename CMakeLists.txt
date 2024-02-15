@@ -13,3 +13,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/externals)
 add_executable(generate_path test/generate_path.cpp)
 target_include_directories(generate_path PUBLIC ${INCLUDE_DIR})
 target_link_libraries(generate_path PRIVATE node2d supportLib pbPlots grid_2d_solver)
+
+# Generate path weighted
+add_executable(generate_path_weighted test/generate_path_weighted.cpp)
+target_include_directories(generate_path_weighted PUBLIC ${INCLUDE_DIR})
+target_link_libraries(generate_path_weighted PRIVATE node2d supportLib pbPlots grid_2d_solver)
