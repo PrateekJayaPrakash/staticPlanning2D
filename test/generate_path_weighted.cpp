@@ -4,6 +4,8 @@
 #include <nodes/node2d.h>
 #include <fstream>
 #include <random>
+#include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -70,8 +72,8 @@ void NodeGraph::addEdge(int x1, int y1, int x2, int y2, int weight){
     node1->edges.push_back(make_pair(node2, weight));
     node2->edges.push_back(make_pair(node1, weight));
 
-    cout << "Edge added between {" << x1 << ", " << y1 
-         << "} and {" << x2 << ", " << y2 << "} with weight " << weight << endl;
+    //cout << "Edge added between {" << x1 << ", " << y1 
+         //<< "} and {" << x2 << ", " << y2 << "} with weight " << weight << endl;
 }
 
 void NodeGraph::graphBuilder(){
@@ -79,15 +81,15 @@ void NodeGraph::graphBuilder(){
     int height = 30;
     // Create horizontal lines
     for (int x : {0, 1, 2, 13, 14, 15, 16, 27, 28, 29}) {
-        for (int y = 0; y < height; ++y) {
-            addEdge(x, y, x, y, 5); // Add point at (x, y)
+        for (int y = 0; y < height-1; ++y) {
+            addEdge(x, y, x, y+1, 5); // Add point at (x, y)
         }
     }
 
     // Create vertical line
     for (int y : {0, 1, 2, 13, 14, 15, 16, 27, 28, 29}) {
-        for (int x = 0; x < width; ++x) {
-            addEdge(x, y, x, y, 5); // Add point at (x, y)
+        for (int x = 0; x < width-1; ++x) {
+            addEdge(x, y, x+1, y, 5); // Add point at (x, y)
         }
     }
     removeRandomPoints(0);
@@ -137,9 +139,56 @@ void NodeGraph::removeRandomPoints(int N) {
 
 void NodeGraph::djikstra(int x1, int y1, int x2, int y2){
     // Assumption: start and goal exist in the map
-    shared_ptr<node2d> start = findOrCreateNode(x1, y1);
-    shared_ptr<node2d> goal = findOrCreateNode(x2, y2);
-    vector<shared_ptr<node2d>> path = {start, goal};
+    shared_ptr<node2d> startNode = findOrCreateNode(x1, y1);
+    shared_ptr<node2d> goalNode = findOrCreateNode(x2, y2);
+    bool goalFound = false;
+
+    cout << "Start x:" << startNode->x <<" y:"<<startNode->y << " | Goal x:" << goalNode->x <<" y:"<<goalNode->y<< endl;
+
+    // Priority queue to store nodes with their distances
+    priority_queue<pair<int, shared_ptr<node2d>>, vector<pair<int, shared_ptr<node2d>>>, greater<pair<int, shared_ptr<node2d>>>> pq;
+    
+    // push the start node to the priority queue
+    startNode->distance=0;
+    pq.push({0, startNode});
+
+    // Run till queue not empty
+    while(!pq.empty()){
+        auto current = pq.top().second;
+        int current_dist = pq.top().first;
+        pq.pop();
+
+        // If goal found break
+        if(current->x == x2 && current->y == y2){
+            cout << "Goal found" << endl;
+            goalFound = true;
+            break;
+        }
+
+        // visit neighbors
+        for(const auto& n:current->edges){
+            int newDist = current_dist + n.second;
+            //cout << n.first->x << n.first->y <<n.first->distance << endl;
+            if(newDist < n.first->distance){
+                n.first->distance = newDist;
+                n.first->parent = current;
+                pq.push({newDist, n.first});
+            }
+        }
+    }
+    if(!goalFound){
+        cout << "No path from start to goal. Search ended" << endl;
+        return;
+    }
+
+    vector<shared_ptr<node2d>> path;
+    auto current = goalNode;
+    
+    while(current){
+        path.push_back(current);
+        current = current -> parent;
+    }
+    std::reverse(path.begin(), path.end());
     exportPath(path, "../output/path.csv");
 }
 
@@ -168,11 +217,7 @@ int main()
     NodeGraph graph(100);
 
     // Add edges
-    graph.addEdge(0, 0, 1, 1, 10);
-    graph.addEdge(0, 0, 2, 2, 5);
     graph.graphBuilder();
-    graph.djikstra(1,1,2,2);
-
-    cout << graph.nodeList.size();
+    graph.djikstra(1,1,21,28);
     return 0;
 }

@@ -9,6 +9,7 @@ node2d::node2d(){
     this->goal=0;
     this->parent=nullptr;
     this->cost=INF;
+    this->distance = 10000;
 }
 
 node2d::node2d(int x, int y){
@@ -20,4 +21,5 @@ node2d::node2d(int x, int y){
     this->goal=0;
     this->parent=nullptr;
     this->cost=INF;
+    this->distance = 10000;
 }
