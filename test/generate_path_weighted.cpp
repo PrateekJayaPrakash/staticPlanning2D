@@ -27,13 +27,19 @@ public:
     shared_ptr<node2d> findOrCreateNode(int x, int y);
     // Method to add edge from one node to another
     void addEdge(int x1, int y1, int x2, int y2, int weight);
+    
     // Types of graphs
     void graphBuilder();
     void removeRandomPoints(int N);
     void exportMap(const string& filename);
     void exportPath(const vector<shared_ptr<node2d>>& path, const string& filename);
+    
+    // Helpers
+    int distToGoal(const node2d& start, const node2d& goal, const string method);
+    
     // Solvers
     void djikstra(int x1, int y1, int x2, int y2);
+    void aStar(int x1, int y1, int x2, int y2);
 };
 
 NodeGraph::NodeGraph(int N){
@@ -166,7 +172,7 @@ void NodeGraph::djikstra(int x1, int y1, int x2, int y2){
         }
 
         // visit neighbors
-        for(const auto& n:current->edges){
+        for(auto& n:current->edges){
             int newDist = current_dist + n.second;
             //cout << n.first->x << n.first->y <<n.first->distance << endl;
             if(newDist < n.first->distance){
@@ -190,6 +196,76 @@ void NodeGraph::djikstra(int x1, int y1, int x2, int y2){
     }
     std::reverse(path.begin(), path.end());
     exportPath(path, "../output/path.csv");
+}
+
+void NodeGraph::aStar(int x1, int y1, int x2, int y2){
+    // O(V*E): Use only when edge weights are negative.
+    // Assumption: start and goal exist in the map
+    shared_ptr<node2d> startNode = findOrCreateNode(x1, y1);
+    shared_ptr<node2d> goalNode = findOrCreateNode(x2, y2);
+    bool goalFound = false;
+
+    cout << "A* algo start x:" << startNode->x << " y:" 
+            <<startNode->y << " | Goal x:" 
+            << goalNode->x <<" y:"<<goalNode->y
+            << endl;
+
+    priority_queue<
+        pair<int, shared_ptr<node2d>>,
+        vector<pair<int, shared_ptr<node2d>>>,
+        greater<pair<int, shared_ptr<node2d>>>
+        > pq;
+    
+    // push the start node to the priority queue
+    startNode->distance=0;
+    int d2g = distToGoal(*startNode, *goalNode, "manhatten");
+    pq.push({startNode->distance=0 + d2g, startNode});
+
+    while(!pq.empty()){
+        shared_ptr<node2d> current = pq.top().second;
+        int currDist = pq.top().first;
+        pq.pop();
+
+        // If goal Node is the top of the priority queue then we stop
+        if(current->x == x2 && current->y == y2){
+            cout << "Goal found dist: " << current->distance << endl;
+            goalFound = true;
+            break;
+        }
+
+        // Cost to goal heurestic : Manhatten distance
+        //d2g = distToGoal(*current, *goalNode, "manhatten");
+
+        for(auto& n:current->edges){
+            int newDist = current->distance + n.second;
+            if(newDist < n.first->distance){
+                n.first->distance = newDist;
+                n.first->parent = current;
+                pq.push({newDist+distToGoal(*n.first, *goalNode, "manhatten"), n.first});
+            }
+        }
+    }
+    if(!goalFound){
+        cout << "No path from start to goal. Search ended" << endl;
+        return;
+    }
+
+    vector<shared_ptr<node2d>> path;
+    auto current = goalNode;
+    
+    while(current){
+        path.push_back(current);
+        current = current -> parent;
+    }
+    std::reverse(path.begin(), path.end());
+    exportPath(path, "../output/path.csv");
+}
+
+int NodeGraph::distToGoal(const node2d& start, const node2d& goal, const string method){
+    if(method == "manhatten"){
+        return abs(start.x - goal.x) + abs(start.y - goal.y);
+    }
+    return -1;
 }
 
 void NodeGraph::exportPath(const vector<shared_ptr<node2d>>& path, const string& filename){
@@ -218,6 +294,7 @@ int main()
 
     // Add edges
     graph.graphBuilder();
-    graph.djikstra(1,1,21,28);
+    //graph.djikstra(1,1,21,28);
+    graph.aStar(1,1,21,28);
     return 0;
 }
